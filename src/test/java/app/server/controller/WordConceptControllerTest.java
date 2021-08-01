@@ -17,6 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -38,21 +40,13 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {SpringWebConfig.class, WebConfiguration.class})
-@WebAppConfiguration
-@EnableWebFlux
+@SpringBootTest
+@AutoConfigureMockMvc
 public class WordConceptControllerTest {
 
     @Autowired
-    private WebApplicationContext webApplicationContext;
-
     private MockMvc mockMvc;
-
-    @BeforeEach
-    public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).build();
-    }
 
     @Test
     public void getAll() throws Exception {
@@ -116,7 +110,7 @@ public class WordConceptControllerTest {
         checkExpand(mvcResult);
     }
 
-    private void checkExpand(MvcResult mvcResult) throws UnsupportedEncodingException, com.fasterxml.jackson.core.JsonProcessingException {
+    private void checkExpand(MvcResult mvcResult) throws UnsupportedEncodingException, JsonProcessingException {
         String responseBody = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         WordConceptResource[] resources = new ObjectMapper().readerFor(WordConceptResource[].class).readValue(responseBody);
         for (WordConceptResource resource: resources) {

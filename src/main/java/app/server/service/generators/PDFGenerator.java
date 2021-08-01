@@ -9,16 +9,24 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class PDFGenerator implements DocGeneratorService {
 
-    private final static String FONTS_DIR = "./src/main/resources/fonts/";
-    private final static String FONT_BOLD = "NotoSans-Bold.ttf";
-    private final static String FONT_ITALIC = "NotoSans-Italic.ttf";
-    private final static String FONT_REGULAR = "NotoSans-Regular.ttf";
+    static {
+        ClassLoader classLoader = PDFGenerator.class.getClassLoader();
+        FONT_BOLD = classLoader.getResource("fonts/NotoSans-Bold.ttf");
+        FONT_ITALIC = classLoader.getResource("fonts/NotoSans-Italic.ttf");
+        FONT_REGULAR = classLoader.getResource("fonts/NotoSans-Regular.ttf");
+    }
+
+    private final static URL FONT_BOLD;
+    private final static URL FONT_ITALIC;
+    private final static URL FONT_REGULAR;
     private final static int TITLE_FONT_SIZE = 18;
     public static final String AUTHOR = "Nasybullin Ilnyr";
     public static final String TITLE = "Dictionary";
@@ -27,19 +35,30 @@ public class PDFGenerator implements DocGeneratorService {
 
     public ByteArrayOutputStream generate(String languageFrom, String languageTo, List<Result> results) throws IOException {
         PDFBuilder builder = new PDFBuilder();
-        builder.newPage()
-                .loadFont(new File(FONTS_DIR + FONT_BOLD), FontType.BOLD)
-                .setFontSize(TITLE_FONT_SIZE)
-                .setLeading(1.5f * TITLE_FONT_SIZE)
-                .setMargin(60f)
-                .newText(getTitle(languageFrom, languageTo))
-                .newPage()
-                .loadFont(new File(FONTS_DIR + FONT_ITALIC), FontType.ITALIC)
-                .loadFont(new File(FONTS_DIR + FONT_REGULAR), FontType.REGULAR)
-                .setFontSize(12)
-                .setColumnsCount((byte) 2)
-                .setColumnSpacing(20f)
-                .setLeading(18);
+        File ttfFile = null;
+        try {
+            ttfFile = new File(FONT_BOLD.toURI());
+            System.out.println(ttfFile.exists());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        try {
+            builder.newPage()
+                    .loadFont(ttfFile, FontType.BOLD)
+                    .setFontSize(TITLE_FONT_SIZE)
+                    .setLeading(1.5f * TITLE_FONT_SIZE)
+                    .setMargin(60f)
+                    .newText(getTitle(languageFrom, languageTo))
+                    .newPage()
+                    .loadFont(new File(FONT_ITALIC.toURI()), FontType.ITALIC)
+                    .loadFont(new File(FONT_REGULAR.toURI()), FontType.REGULAR)
+                    .setFontSize(12)
+                    .setColumnsCount((byte) 2)
+                    .setColumnSpacing(20f)
+                    .setLeading(18);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
 
 
         if (!results.isEmpty()) {
